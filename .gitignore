@@ -15,3 +15,15 @@ node_modules
 
 # Hardhat Ignition default folder for deployments against a local node
 ignition/deployments/chain-31337
+# Secrets & keys
+keys/
+
+# Runtime-generated files
+deployedAddresses.json
+batch_results.json
+
+# Input evidence files
+batch_input/
+
+# Node artifacts
+node_modules/

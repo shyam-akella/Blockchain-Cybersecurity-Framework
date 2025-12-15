@@ -1,4 +1,6 @@
 const { ethers } = require("hardhat");
+const fs = require("fs");
+const path = require("path");
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -7,19 +9,30 @@ async function main() {
   // 1. Deploy UserAuth
   const UserAuth = await ethers.getContractFactory("UserAuth");
   const userAuth = await UserAuth.deploy();
-  await userAuth.waitForDeployment(); // Waits for deployment to complete
+  await userAuth.waitForDeployment();
   console.log("UserAuth deployed to:", userAuth.target);
 
-  // 2. Deploy Management (passing UserAuth address)
+  // 2. Deploy Management
   const Management = await ethers.getContractFactory("Management");
   const management = await Management.deploy(userAuth.target);
   await management.waitForDeployment();
   console.log("Management deployed to:", management.target);
 
-  // 3. Print addresses for use later
-  console.log("\nCONTRACT_ADDRESSES:");
-  console.log("USER_AUTH_ADDRESS=", userAuth.target);
-  console.log("MANAGEMENT_ADDRESS=", management.target);
+  // 3. AUTO-SAVE ADDRESSES TO FILE (The Magic Part) 🪄
+  const addresses = {
+    UserAuth: userAuth.target,
+    Management: management.target
+  };
+
+  // We save this file in the 'frontend' folder too, so the UI can find it later
+  const addressFile = path.join(__dirname, "../deployedAddresses.json");
+  
+  fs.writeFileSync(
+    addressFile,
+    JSON.stringify(addresses, null, 2)
+  );
+
+  console.log(`\n✅ Addresses saved automatically to: ${addressFile}`);
 }
 
 main().catch((error) => {

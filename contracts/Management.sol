@@ -11,12 +11,14 @@ contract Management {
     IUserAuth public auth;
     address public admin;
 
-    struct Evidence {
-        string fileCID;
-        string description;
-        uint256 timestamp;
-        address addedBy;
-    }
+   // --- Replace the Evidence struct with this ---
+struct Evidence {
+    string fileCID;
+    string description;
+    string mimeType;      // NEW: MIME type, e.g., "image/jpeg"
+    uint256 timestamp;
+    address addedBy;
+}
 
     // caseId -> owner
     mapping(uint256 => address) public caseOwner;
@@ -54,13 +56,18 @@ contract Management {
         emit CaseCreated(caseId, msg.sender);
     }
 
-    // Add evidence: store IPFS CID (file must already be AES-encrypted off-chain)
-    function addEvidence(uint256 caseId, string calldata fileCID, string calldata description) external caseExists(caseId) {
-        uint8 role = auth.getRole(msg.sender);
-        require(msg.sender == caseOwner[caseId] || role == 3 || role == 1, "No permission to add evidence");
-        evidences[caseId].push(Evidence(fileCID, description, block.timestamp, msg.sender));
-        emit EvidenceAdded(caseId, evidences[caseId].length - 1, fileCID, msg.sender);
-    }
+    // --- Replace the addEvidence function with this ---
+function addEvidence(
+    uint256 caseId,
+    string calldata fileCID,
+    string calldata description,
+    string calldata mimeType
+) external caseExists(caseId) {
+    uint8 role = auth.getRole(msg.sender);
+    require(msg.sender == caseOwner[caseId] || role == 3 || role == 1, "No permission to add evidence");
+    evidences[caseId].push(Evidence(fileCID, description, mimeType, block.timestamp, msg.sender));
+    emit EvidenceAdded(caseId, evidences[caseId].length - 1, fileCID, msg.sender);
+}
 
     // Grant access: store encrypted AES key (base64) for grantee on-chain
     function grantAccess(uint256 caseId, address grantee, string calldata encryptedAESKey) external caseExists(caseId) onlyCaseOwner(caseId) {
